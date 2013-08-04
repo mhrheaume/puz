@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+import sys
+
+try:
+	from puz import puz
+except ImportError:
+	sys.path.append("../")
+	from puz import puz
+
+puz.start()
