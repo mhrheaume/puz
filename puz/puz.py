@@ -1,53 +1,7 @@
-if __name__ == "__main__" and __package__ is None:
-	__package__ = "puz"
-
-from puz import *
-
 import argparse
 import sys
 
-def _print_usage():
-	print("""
-
-	NAME
-		puz - Easily choose package specific USE flags
-
-	SYNOPSIS
-		puz [-wsvh] <package>
-
-	DESCRIPTION
-		Choose package specific USE flags for a given package and optionally all
-		of it's dependencies. This program will run emerge to determine available
-		USE flags, will list current USE flags for the package, and  then give the
-		option to choose USE flags for the package. Will loop through package if
-		--with-deps is selected.
-
-		This script will modify /etc/portage/package.use, therefore must be run
-		as a user who can read/write to /etc/portage/package.use, or can write
-		to /etc/portage if package.use does not exist.
-
-	OPTIONS
-		-w, --with-deps
-			Loop through dependencies and choose USE flags for each one.
-
-		-s, --show-emerge-output
-			Display full output from emerge.
-
-		-v, --version
-			Display version and exit.
-
-		-h, --help
-			Display help page and exit.
-
-	EXAMPLES
-		Choose USE flags for sys-kernel/gentoo-sources.
-			$ puz sys-kernel/gentoo-sources
-
-		Choose USE flags for x11-base/xorg-drivers and all of it's
-		dependencies.
-			$ muz --with-deps xorg-drivers
-
-	""")
+import puz.constants
 
 def _print_select_usage():
 	print("""
@@ -100,9 +54,6 @@ def _print_select_usage():
 
 	""")
 
-def _print_version():
-	print("puz {0} (C) 2013 Matthew Rheaume".format(puz.VERSION))
-
 def _user_confirm():
 	res = ""
 
@@ -120,36 +71,27 @@ def _user_confirm():
 def _parse_options():
 	opts = None
 
-	parser = argparse.ArgumentParser(usage="", add_help=False)
-	parser.add_argument("-s", "--show-emerge-output", action="store_true")
-	parser.add_argument("-w", "--with-deps", action="store_true")
-	parser.add_argument("-v", "--version", action="store_true")
-	parser.add_argument("-h", "--help", action="store_true")
+	parser = argparse.ArgumentParser(
+		description="Interactively choose atom specific USE flags.")
 
-	try:
-		opts = parser.parse_args()
-	except SystemExit:
-		_print_usage()
-		return None
+	parser.add_argument("-s", "--show-emerge",
+		action="store_true",
+		help="show full output from portage")
 
-	if opts.version:
-		_print_version()
-		return None
+	parser.add_argument("-w", "--with-deps",
+		action="store_true",
+		help="choose USE flags for the atom as well as each dependency")
 
-	if opts.help:
-		_print_usage()
-		return None
+	parser.add_argument("-v", "--version",
+		action="version",
+		version=puz.constants.VERSION_STR)
 
-	return opts
+	parser.add_argument("atom", nargs="+")
+
+	return parser.parse_args()
 
 def start():
 	opts = _parse_options()
 
-	if opts is None:
-		sys.exit(1)
-
 	print(opts)
 	sys.exit(0)
-
-if __name__ == "__main__":
-	start()
