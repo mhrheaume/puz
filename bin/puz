@@ -3,9 +3,9 @@
 import sys
 
 try:
-	from puz import puz
+	from puz import main
 except ImportError:
 	sys.path.append("../")
-	from puz import puz
+	from puz import main
 
-puz.start()
+main.start()

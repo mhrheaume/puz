@@ -14,5 +14,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-VERSION = "0.1"
-VERSION_STR = "puz {0} (c) 2013 Matthew Rheaume".format(VERSION)
+class PuzError(Exception):
+	pass
+
