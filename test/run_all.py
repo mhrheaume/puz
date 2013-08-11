@@ -1,4 +1,6 @@
-# Copyright (c) 2013 Matthew Rheaume
+#!/usr/bin/env python3
+#
+# Copyright (C) 2013 Matthew Rheaume
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,5 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-class PuzError(Exception):
-	pass
+import unittest
+
+if __name__ == "__main__":
+	testsuite = unittest.TestLoader().discover(".")
+	unittest.TextTestRunner(vervosity=1).run(testsuite)
