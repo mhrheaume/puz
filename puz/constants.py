@@ -16,3 +16,5 @@
 
 VERSION = "0.1"
 VERSION_STR = "puz {0} (c) 2013 Matthew Rheaume".format(VERSION)
+
+DEFAULT_USE_FILE = "/etc/portage/package.use"

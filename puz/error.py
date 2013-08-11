@@ -16,4 +16,3 @@
 
 class PuzError(Exception):
 	pass
-

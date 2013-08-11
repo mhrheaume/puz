@@ -14,18 +14,25 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+import collections
+import os
 import re
-import regex
+import stat
+import tempfile
 
-from puz.error import PuzError
+import puz.constants
+import puz.error
 
-class PackageError(PuzError):
+class PackageError(puz.PuzError):
+	pass
 
-	def __init__(self, message):
-		self.message = message
+class PackageUseReadError(puz.PuzError):
+	pass
+
+class PackageUseWriteError(puz.PuzError):
+	pass
 
 class Package:
-
 	def __init__(self, name, version, use_flags):
 		self.name = name
 		self.version = version
@@ -85,8 +92,6 @@ class Package:
 				else
 					use_flags.append(v)
 
-			raise PackageError("Cannot match package element")
-
 		err = "Malformed ebuild line ({0})".format(line)
 
 		if name is None:
@@ -99,4 +104,76 @@ class Package:
 			raise PackageError("{0} - unmatched USE delimeter")
 
 		return Package(name, version, use_flags)
+
+class PackageUse:
+	def __init__(self, use_file = puz.constants.DEFAULT_USE_FILE):
+		self.use = collections.defaultdict(list)
+		self.use_file = use_file
+
+		try:
+			with open(self.use_file, "r") as fh:
+				for line in fh:
+					new_entry = line.split(" ")
+
+					if len(new_entry) < 2:
+						continue
+
+					pkg = new_entry.pop(0)
+					flags = new_entry
+
+					self.use[pkg] = flags
+		except IOError as err:
+			errmsg = "Could not read {0}: ".format(self.use_file)
+			errmsg += "{1}".format(err.strerror)
+
+			raise PackageUseReadError(errmsg)
+
+	def __getitem__(self, index):
+		return self.use[index]
+
+	def __setitem__(self, index, val):
+		self.use[index] = val
+
+	def append(self, pkg, flags):
+		for flag in flags:
+			if flag in self.use[pkg]:
+				continue
+
+			self.use[pkg].append(flag)
+
+	def file_entry(self, pkg):
+		if self.use[pkg]:
+			return pkg + " " + self.use[pkg].join(" ")
+
+		return ""
+
+	def commit(self):
+		try:
+			fh_os, fp = tempfile.mkstemp("_puz")
+
+			with os.fdopen(fh_os, "w") as fh:
+				for k in self.use.keys:
+					pkg_entry = entry(k)
+					fh.write(pkg_entry + "\n")
+
+				os.rename(fp, self.use_file)
+				
+				# Permission mask 0664
+				mask = stat.S_IRUSR
+				mask |= stat.S_IWUSR
+				mask |= stat.S_IRGRP
+				mask |= stat.S_IROTH
+
+				os.chmod(self.use_file, mask)
+
+		except IOError as err:
+			errmsg = "Unable to write to tempfile: "
+			errmsg += "{0}".format(err.strerror)
+
+			raise PackageUseWriteError(errmsg)
+		except OSError as err:
+			errmsg = "Unable to replace package.use: "
+			errmsg += "{0}".format(err.strerror)
+
+			raise PackageUseWriteError(errmsg) 
 
