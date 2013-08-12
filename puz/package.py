@@ -21,15 +21,15 @@ import stat
 import tempfile
 
 import puz.constants
-import puz.error
+from puz.error import PuzError
 
-class PackageError(puz.PuzError):
+class PackageError(PuzError):
 	pass
 
-class PackageUseReadError(puz.PuzError):
+class PackageUseReadError(PuzError):
 	pass
 
-class PackageUseWriteError(puz.PuzError):
+class PackageUseWriteError(PuzError):
 	pass
 
 class Package:
@@ -49,12 +49,14 @@ class Package:
 
 			flag_raw = match.group(0)
 			if flag_raw[0] == "-":
-				flag_raw = flag_raw[1:-1]
+				flag_raw = flag_raw[1:]
 
-			a.append(flag_raw)
+			self.all_use.append(flag_raw)
+
 
 	def is_valid_flag(self, flag):
 		return flag in self.all_use
+
 
 	@staticmethod
 	def parse_emerge_output(line):
@@ -75,21 +77,21 @@ class Package:
 
 			if match:
 				name = match.group(0)
-				version = v[(name.length + 1):-1]
+				version = v[(len(name) + 1):]
 				continue
 
-			match = re.search("^USE=")
+			match = re.search("^USE=", v)
 
 			if match:
 				use_start = True
-				use_flags.append(v[(v.index('"') + 1):-1])
+				use_flags.append(v[(v.index('"') + 1):])
 				continue
 
 			if use_start and not use_end:
 				if v[-1] == '"':
-					use_flags.append(v[0:-2])
-					use_end = true
-				else
+					use_flags.append(v[0:-1])
+					use_end = True
+				else:
 					use_flags.append(v)
 
 		err = "Malformed ebuild line ({0})".format(line)
@@ -98,12 +100,13 @@ class Package:
 			raise PackageError("{0} - no name".format(err))
 
 		if version is None:
-			raise PackageError("{0} - no version".format(err)
+			raise PackageError("{0} - no version".format(err))
 
 		if use_start and not use_end:
 			raise PackageError("{0} - unmatched USE delimeter")
 
 		return Package(name, version, use_flags)
+
 
 class PackageUse:
 	def __init__(self, use_file = puz.constants.DEFAULT_USE_FILE):
@@ -113,7 +116,7 @@ class PackageUse:
 		try:
 			with open(self.use_file, "r") as fh:
 				for line in fh:
-					new_entry = line.split(" ")
+					new_entry = line.strip().split(" ")
 
 					if len(new_entry) < 2:
 						continue
@@ -128,32 +131,37 @@ class PackageUse:
 
 			raise PackageUseReadError(errmsg)
 
+
 	def __getitem__(self, index):
 		return self.use[index]
+
 
 	def __setitem__(self, index, val):
 		self.use[index] = val
 
-	def append(self, pkg, flags):
+
+	def extend(self, pkg, flags):
 		for flag in flags:
 			if flag in self.use[pkg]:
 				continue
 
 			self.use[pkg].append(flag)
 
-	def file_entry(self, pkg):
+
+	def __file_entry(self, pkg):
 		if self.use[pkg]:
-			return pkg + " " + self.use[pkg].join(" ")
+			return pkg + " " + " ".join(self.use[pkg])
 
 		return ""
+
 
 	def commit(self):
 		try:
 			fh_os, fp = tempfile.mkstemp("_puz")
 
 			with os.fdopen(fh_os, "w") as fh:
-				for k in self.use.keys:
-					pkg_entry = entry(k)
+				for k in self.use.keys():
+					pkg_entry = self.__file_entry(k)
 					fh.write(pkg_entry + "\n")
 
 				os.rename(fp, self.use_file)

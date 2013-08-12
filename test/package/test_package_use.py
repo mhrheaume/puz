@@ -55,17 +55,19 @@ class PackageUseTests(unittest.TestCase):
 			["examples", "hardened"]
 		]
 
+		flags.append(flags[1] + flags[2])
+
 		pu["dev-lang/python-3.2.5"] = flags[0]
 		pu["dev-lang/python"] = flags[1]
 
 		self.assertCountEqual(pu["dev-lang/python-3.2.5"], flags[0])
 		self.assertCountEqual(pu["dev-lang/python"], flags[1])
 
-		pu.append("dev-lang/python", flags[2])
-		self.assertCountEqual(pu["dev-lang/python"], flags[1] + flags[2])
+		pu.extend("dev-lang/python", flags[2])
+		self.assertCountEqual(pu["dev-lang/python"], flags[3])
 
-		pu.append("dev-lang/python", flags[1])
-		self.assertCountEqual(pu["dev-lang/python"], flags[1] + flags[2])
+		pu.extend("dev-lang/python", flags[1])
+		self.assertCountEqual(pu["dev-lang/python"], flags[3])
 
 		os.remove(fp)
 
@@ -85,7 +87,7 @@ class PackageUseTests(unittest.TestCase):
 		final_entries = [
 			"x11-wm/xmonad doc hscolour",
 			"dev-libs/libxml2 ipv6",
-			"sys-devel/gcc-4.5.4 cxx -fortran",
+			"sys-devel/gcc-4.5.4 cxx",
 			"x11-wm/xmonad-0.9.2 profile hscolour",
 			"sys-devel/gcc cxx fortran"
 		]

@@ -17,7 +17,7 @@
 import textwrap
 import unittest
 
-from puz.package import Package
+from puz.package import Package, PackageError
 
 EMERGE_OUTPUT = textwrap.dedent("""\
 	[ebuild   R   ~] x11-wm/xmonad-0.9.2  USE="-doc -hscolour -profile" 0kB
@@ -57,12 +57,15 @@ class PackageTests(unittest.TestCase):
 			["cxx", "test", "fortran"],
 		]
 
-		for i, v in enumerate(EMERGE_OUTPUT.split("\n")):
-			pkg = Package.parse_emerge_output(v)
+		for i, v in enumerate(EMERGE_OUTPUT.strip().split("\n")):
+			try:
+				pkg = Package.parse_emerge_output(v)
+			except PackageError:
+				raise Exception("Error processing {0} ({1})".format(v, i))
 
-			self.assertCountEqual(pkg.name, expect_names[i])
-			self.assertCountEqual(pkg.version, expect_version[i])
-			self.assertCountEqual(pkg.name_ver, expect_name_ver[i])
+			self.assertEqual(pkg.name, expect_name[i])
+			self.assertEqual(pkg.version, expect_version[i])
+			self.assertEqual(pkg.name_ver, expect_name_ver[i])
 
 			self.assertCountEqual(pkg.current_use, expect_current_use[i])
 			self.assertCountEqual(pkg.all_use, expect_all_use[i])

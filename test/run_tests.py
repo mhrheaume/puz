@@ -16,8 +16,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+import os
 import unittest
+import sys
+
+RUN_TESTS_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(RUN_TESTS_DIR))
 
 if __name__ == "__main__":
 	testsuite = unittest.TestLoader().discover(".")
-	unittest.TextTestRunner(vervosity=1).run(testsuite)
+	unittest.TextTestRunner(verbosity=1).run(testsuite)
