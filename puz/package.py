@@ -140,12 +140,27 @@ class PackageUse:
 		self.use[index] = val
 
 
+	def append(self, pkg, flag):
+		if flag in self.use[pkg]:
+			return
+
+		if flag[0] == "-" and flag[1:] in self.use[pkg]:
+			# Replace "-flag" with "flag"
+			self.use[pkg].remove(flag[1:])
+			self.use[pkg].append(flag)
+			return
+
+		if flag[0] != "-" and ("-" + flag) in self.use[pkg]:
+			self.use[pkg].remove("-" + flag)
+			self.use[pkg].append(flag)
+			return
+
+		self.use[pkg].append(flag)
+
+
 	def extend(self, pkg, flags):
 		for flag in flags:
-			if flag in self.use[pkg]:
-				continue
-
-			self.use[pkg].append(flag)
+			self.append(pkg, flag)
 
 
 	def __file_entry(self, pkg):
