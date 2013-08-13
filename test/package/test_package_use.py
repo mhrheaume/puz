@@ -52,10 +52,12 @@ class PackageUseTests(unittest.TestCase):
 		flags = [
 			["gdbm", "ncurses", "threads"],
 			["sqlite", "tk", "xml"],
-			["examples", "hardened"]
+			["examples", "hardened"],
+			["-examples", "-hardened"]
 		]
 
 		flags.append(flags[1] + flags[2])
+		flags.append(flags[1] + flags[3])
 
 		pu["dev-lang/python-3.2.5"] = flags[0]
 		pu["dev-lang/python"] = flags[1]
@@ -64,10 +66,13 @@ class PackageUseTests(unittest.TestCase):
 		self.assertCountEqual(pu["dev-lang/python"], flags[1])
 
 		pu.extend("dev-lang/python", flags[2])
-		self.assertCountEqual(pu["dev-lang/python"], flags[3])
+		self.assertCountEqual(pu["dev-lang/python"], flags[4])
 
-		pu.extend("dev-lang/python", flags[1])
-		self.assertCountEqual(pu["dev-lang/python"], flags[3])
+		pu.extend("dev-lang/python", flags[2])
+		self.assertCountEqual(pu["dev-lang/python"], flags[4])
+
+		pu.extend("dev-lang/python", flags[3])
+		self.assertCountEqual(pu["dev-lang/python"], flags[5])
 
 		os.remove(fp)
 
