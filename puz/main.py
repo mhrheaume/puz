@@ -85,8 +85,6 @@ def _user_confirm():
 	return res == "yes" or res == "y"
 
 def _parse_options():
-	opts = None
-
 	parser = argparse.ArgumentParser(
 		description="Interactively choose atom specific USE flags.")
 
