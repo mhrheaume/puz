@@ -21,15 +21,15 @@ import stat
 import tempfile
 
 import puz.constants
-from puz.error import PuzError
+import puz.error
 
-class PackageError(PuzError):
+class PackageError(puz.error.PuzError):
 	pass
 
-class PackageUseReadError(PuzError):
+class PackageUseReadError(puz.error.PuzError):
 	pass
 
-class PackageUseWriteError(PuzError):
+class PackageUseWriteError(puz.error.PuzError):
 	pass
 
 class Package:
@@ -163,7 +163,7 @@ class PackageUse:
 			self.append(pkg, flag)
 
 
-	def __file_entry(self, pkg):
+	def file_entry(self, pkg):
 		if self.use[pkg]:
 			return pkg + " " + " ".join(self.use[pkg])
 
@@ -176,7 +176,7 @@ class PackageUse:
 
 			with os.fdopen(fh_os, "w") as fh:
 				for k in self.use.keys():
-					pkg_entry = self.__file_entry(k)
+					pkg_entry = self.file_entry(k)
 					fh.write(pkg_entry + "\n")
 
 				os.rename(fp, self.use_file)

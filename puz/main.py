@@ -15,9 +15,15 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 import argparse
+import subprocess
 import sys
 
 import puz.constants
+import puz.error
+import puz.package
+
+class NoMatchError(puz.PuzError):
+	pass
 
 def _print_select_usage():
 	print("""
@@ -84,6 +90,61 @@ def _user_confirm():
 
 	return res == "yes" or res == "y"
 
+def _select_use_flags(pu, pkg):
+	if not pkg.current_use:
+		return
+
+	done = False
+
+	print("")
+	print("Select USE flags for {0}".format(pkg.name_ver))
+	print("USE=\"{0}\"".format(" ".join(pkg.current_use)))
+	print("")
+
+	print("Current package.use entry for {0}".format(pkg.name))
+	if pu[pkg.name]:
+		print(pu.file_entry(pkg.name))
+	else:
+		print("<none>")
+
+	print("Current package.use entry for {0}".format(pkg.name_ver))
+	if pu[pkg.name_ver]:
+		print(pu.file_entry(pkg.name_ver))
+	else:
+		print("<none>")
+
+	print("")
+
+	# Main USE flag selection loop
+
+
+def _is_nomatch_line(line):
+	pattern = "emerge: there are no ebuilds to satisfy"
+	return re.match(pattern, line) is not None
+
+
+def _is_ebuild_line(line):
+	pattern = "\[ebuild[[:blank:]]+[NSUDrRFfIBb]*[[:blank:]]+[~*#]*\]"
+	return re.match(pattern, line) is not None
+
+
+def _get_ebuild_lines(emerge_output):
+	ebuild_lines = []
+
+	for line in emerge_output.split("\n"):
+		if _is_nomatch_line(line):
+			errmsg = "ERROR: No matching ebuilds!\n"
+			errmsg += "Output from emerge:\n")
+			errmsg += emerge_output
+
+			raise NoMatchError(errmsg)
+
+		if _is_ebuild_line(line):
+			ebuild_lines.append(line)
+
+	return ebuild_lines
+
+
 def _parse_options():
 	parser = argparse.ArgumentParser(
 		description="Interactively choose atom specific USE flags.")
@@ -104,8 +165,48 @@ def _parse_options():
 
 	return parser.parse_args()
 
+
 def start():
 	opts = _parse_options()
 
-	print(opts)
+	try:
+		pu = puz.package.PackageUse()
+	except puz.package.PackageUseReadError as err:
+		sys.exit("ERROR: Unable to read package.use file! Are you root?")
+
+	emerge_flags = "-pv"
+	if not opts["with_deps"]:
+		emerge_flags += "O"
+
+	emerge_target = opts["atom"]
+
+	try:
+		emerge_output = subprocess.check_output(
+			["emerge", emerge_flags, emerge_target],
+			stderr=subprocess.STDOUT
+	except subprocess.CalledProcessError as err:
+		sys.exit("ERROR: Failed to run 'emerge {0} {1}'".format(
+			emerge_flags,
+			emerge_target)
+
+	if opts["show_emerge"]:
+		print("Output from emerge:")
+		print(emerge_output)
+
+	try:
+		ebuild_lines = _get_ebuild_lines(emerge_output)
+	except NoMatchError as err:
+		sys.exit(err.strerr)
+
+	for ebuild in ebuild_lines:
+		pkg = puz.package.Package.parse_emerge_output(ebuild)
+		_select_use_flags(pu, pkg)
+
+	try:
+		pu.commit()
+	except puz.package.PackageUseWriteError as err:
+		sys.exit("ERROR: Unable to write package.use file! Are you root?")
+
+	print("Done!")
 	sys.exit(0)
+
