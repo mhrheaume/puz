@@ -90,11 +90,38 @@ def _user_confirm():
 
 	return res == "yes" or res == "y"
 
+
+def _parse_use_argv(argv, pkg):
+	parser = argparse.ArgumentParser(prefix_chars="+")
+
+	parser.add_argument("+v", "++version",
+		action="store_true",
+		help="include version in USE flag entry")
+
+	parser.add_argument("+s", "++skip",
+		action="store_true",
+		help="make no changes and skip this package")
+
+	parser.add_argument("+a", "++append",
+		action="store_true",
+		help="append the following flags to the current entry")
+
+	parser.add_argument("flag", nargs="+")
+
+	opts = parser.parse_args(argv)
+
+	for flag in opts["flag"]:
+		if not pkg.is_valid_flag(flag):
+			print("ERROR: {0} is not a valid USE flag".format(flag))
+			parser.print_help()
+			sys.exit(0)
+
+	return opts
+
+
 def _select_use_flags(pu, pkg):
 	if not pkg.current_use:
 		return
-
-	done = False
 
 	print("")
 	print("Select USE flags for {0}".format(pkg.name_ver))
@@ -116,6 +143,39 @@ def _select_use_flags(pu, pkg):
 	print("")
 
 	# Main USE flag selection loop
+	while True:
+		print("Enter USE flags (+h for help): ")
+		print("> ")
+
+		name = pkg.name
+		new_use = []
+
+		try:
+			opts = _parse_use_argv(input().split(" "), pkg)
+		except SystemExit as err:
+			print("")
+			continue
+
+		if opts["skip"]:
+			return
+
+		if opts["version"]:
+			name = pkg.name_ver
+
+		new_use = opts["flag"]
+		old_use = pu[name]
+
+		if opts["append"]:
+			pu.extend(name, new_use) : pu[name] = new_use
+
+		puts("Entry to write:")
+		puts(pu.file_entry(name))
+
+		if not _user_confirm():
+			pu[name] = old_use
+			continue
+
+		break
 
 
 def _is_nomatch_line(line):
@@ -145,7 +205,7 @@ def _get_ebuild_lines(emerge_output):
 	return ebuild_lines
 
 
-def _parse_options():
+def _parse_argv():
 	parser = argparse.ArgumentParser(
 		description="Interactively choose atom specific USE flags.")
 
@@ -167,7 +227,7 @@ def _parse_options():
 
 
 def start():
-	opts = _parse_options()
+	opts = _parse_argv()
 
 	try:
 		pu = puz.package.PackageUse()
@@ -178,7 +238,7 @@ def start():
 	if not opts["with_deps"]:
 		emerge_flags += "O"
 
-	emerge_target = opts["atom"]
+	emerge_target = opts["atom"][0]
 
 	try:
 		emerge_output = subprocess.check_output(
