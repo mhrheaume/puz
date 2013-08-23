@@ -22,7 +22,7 @@ import puz.constants
 import puz.error
 import puz.package
 
-class NoMatchError(puz.PuzError):
+class NoMatchError(puz.error.PuzError):
 	pass
 
 def _print_select_usage():
@@ -166,7 +166,9 @@ def _select_use_flags(pu, pkg):
 		old_use = pu[name]
 
 		if opts["append"]:
-			pu.extend(name, new_use) : pu[name] = new_use
+			pu.extend(name, new_use)
+		else:
+			pu[name] = new_use
 
 		puts("Entry to write:")
 		puts(pu.file_entry(name))
@@ -194,7 +196,7 @@ def _get_ebuild_lines(emerge_output):
 	for line in emerge_output.split("\n"):
 		if _is_nomatch_line(line):
 			errmsg = "ERROR: No matching ebuilds!\n"
-			errmsg += "Output from emerge:\n")
+			errmsg += "Output from emerge:\n"
 			errmsg += emerge_output
 
 			raise NoMatchError(errmsg)
@@ -243,11 +245,11 @@ def start():
 	try:
 		emerge_output = subprocess.check_output(
 			["emerge", emerge_flags, emerge_target],
-			stderr=subprocess.STDOUT
+			stderr=subprocess.STDOUT)
 	except subprocess.CalledProcessError as err:
 		sys.exit("ERROR: Failed to run 'emerge {0} {1}'".format(
 			emerge_flags,
-			emerge_target)
+			emerge_target))
 
 	if opts["show_emerge"]:
 		print("Output from emerge:")
