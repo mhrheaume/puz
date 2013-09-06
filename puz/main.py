@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 import argparse
+import re
 import subprocess
 import sys
 
@@ -24,6 +25,7 @@ import puz.package
 
 class NoMatchError(puz.error.PuzError):
 	pass
+
 
 def _print_select_usage():
 	print("""
@@ -76,6 +78,7 @@ def _print_select_usage():
 
 	""")
 
+
 def _user_confirm():
 	res = ""
 
@@ -110,7 +113,7 @@ def _parse_use_argv(argv, pkg):
 
 	opts = parser.parse_args(argv)
 
-	for flag in opts["flag"]:
+	for flag in opts.flag:
 		if not pkg.is_valid_flag(flag):
 			print("ERROR: {0} is not a valid USE flag".format(flag))
 			parser.print_help()
@@ -145,7 +148,7 @@ def _select_use_flags(pu, pkg):
 	# Main USE flag selection loop
 	while True:
 		print("Enter USE flags (+h for help): ")
-		print("> ")
+		print("> ", end="")
 
 		name = pkg.name
 		new_use = []
@@ -156,16 +159,16 @@ def _select_use_flags(pu, pkg):
 			print("")
 			continue
 
-		if opts["skip"]:
+		if opts.skip:
 			return
 
-		if opts["version"]:
+		if opts.version:
 			name = pkg.name_ver
 
-		new_use = opts["flag"]
+		new_use = opts.flag
 		old_use = pu[name]
 
-		if opts["append"]:
+		if opts.append:
 			pu.extend(name, new_use)
 		else:
 			pu[name] = new_use
@@ -181,12 +184,12 @@ def _select_use_flags(pu, pkg):
 
 
 def _is_nomatch_line(line):
-	pattern = "emerge: there are no ebuilds to satisfy"
+	pattern = r"emerge: there are no ebuilds to satisfy"
 	return re.match(pattern, line) is not None
 
 
 def _is_ebuild_line(line):
-	pattern = "\[ebuild[[:blank:]]+[NSUDrRFfIBb]*[[:blank:]]+[~*#]*\]"
+	pattern = r"\[ebuild[ \t]+[NSUDrRFfIBb]*[ \t]+[~*#]*\]"
 	return re.match(pattern, line) is not None
 
 
@@ -237,26 +240,27 @@ def start():
 		sys.exit("ERROR: Unable to read package.use file! Are you root?")
 
 	emerge_flags = "-pv"
-	if not opts["with_deps"]:
+	if not opts.with_deps:
 		emerge_flags += "O"
 
-	emerge_target = opts["atom"][0]
+	emerge_target = opts.atom[0]
 
 	try:
 		emerge_output = subprocess.check_output(
 			["emerge", emerge_flags, emerge_target],
 			stderr=subprocess.STDOUT)
+		emerge_output_str = emerge_output.decode("utf-8")
 	except subprocess.CalledProcessError as err:
 		sys.exit("ERROR: Failed to run 'emerge {0} {1}'".format(
 			emerge_flags,
 			emerge_target))
 
-	if opts["show_emerge"]:
+	if opts.show_emerge:
 		print("Output from emerge:")
-		print(emerge_output)
+		print(emerge_output_str)
 
 	try:
-		ebuild_lines = _get_ebuild_lines(emerge_output)
+		ebuild_lines = _get_ebuild_lines(emerge_output_str)
 	except NoMatchError as err:
 		sys.exit(err.strerr)
 

@@ -42,7 +42,7 @@ class Package:
 		self.all_use = []
 
 		for flag in self.current_use:
-			match = re.search("([0-9A-Za-z\-]+)", flag)
+			match = re.search(r"([0-9A-Za-z\-]+)", flag)
 
 			if not match:
 				continue
@@ -60,8 +60,8 @@ class Package:
 
 	@staticmethod
 	def parse_emerge_output(line):
-		name_regex_str = "[0-9A-Za-z+_\.\-]+/"
-		name_regex_str += "[0-9A-Za-z+_\.]+(-[[:alpha:]][0-9A-Za-z+_\.]*)*"
+		name_regex_str = r"[0-9A-Za-z+_\.\-]+/"
+		name_regex_str += r"[0-9A-Za-z+_\.]+(-[[:alpha:]][0-9A-Za-z+_\.]*)*"
 
 		name_regex = re.compile(name_regex_str)
 
@@ -80,7 +80,7 @@ class Package:
 				version = v[(len(name) + 1):]
 				continue
 
-			match = re.search("^USE=", v)
+			match = re.search(r"^USE=", v)
 
 			if match:
 				use_start = True
