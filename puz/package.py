@@ -18,7 +18,7 @@ import collections
 import os
 import re
 import stat
-import tempfile
+import time
 
 import puz.constants
 import puz.error
@@ -111,10 +111,9 @@ class Package:
 class PackageUse:
 	def __init__(self, use_file = puz.constants.DEFAULT_USE_FILE):
 		self.use = collections.defaultdict(list)
-		self.use_file = use_file
 
 		try:
-			with open(self.use_file, "r") as fh:
+			with open(use_file, "r") as fh:
 				for line in fh:
 					new_entry = line.strip().split(" ")
 
@@ -126,7 +125,7 @@ class PackageUse:
 
 					self.use[pkg] = flags
 		except IOError as err:
-			errmsg = "Could not read {0}: ".format(self.use_file)
+			errmsg = "Could not read {0}: ".format(use_file)
 			errmsg += "{1}".format(err.strerror)
 
 			raise PackageUseReadError(errmsg)
@@ -172,31 +171,26 @@ class PackageUse:
 
 	def commit(self):
 		try:
-			fh_os, fp = tempfile.mkstemp("_puz")
+			fp = "puz_" + time.strftime("%Y-%m-%d-%H%M")
 
-			with os.fdopen(fh_os, "w") as fh:
+			with open(fp, "w") as fh:
 				for k in self.use.keys():
+					print(k)
 					pkg_entry = self.file_entry(k)
-					fh.write(pkg_entry + "\n")
+					if pkg_entry:
+						fh.write(pkg_entry + "\n")
 
-				os.rename(fp, self.use_file)
-				
 				# Permission mask 0664
 				mask = stat.S_IRUSR
 				mask |= stat.S_IWUSR
 				mask |= stat.S_IRGRP
 				mask |= stat.S_IROTH
 
-				os.chmod(self.use_file, mask)
+				os.chmod(fp, mask)
 
 		except IOError as err:
 			errmsg = "Unable to write to tempfile: "
 			errmsg += "{0}".format(err.strerror)
 
 			raise PackageUseWriteError(errmsg)
-		except OSError as err:
-			errmsg = "Unable to replace package.use: "
-			errmsg += "{0}".format(err.strerror)
-
-			raise PackageUseWriteError(errmsg) 
 

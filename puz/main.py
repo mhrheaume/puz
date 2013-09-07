@@ -31,9 +31,10 @@ def _user_confirm():
 	res = ""
 
 	while True:
-		print("Is this correct? (y/n) ", end="")
+		print("Is this correct? (y/n)")
+		print("> ", end="")
 
-		res = sys.stdin.readline()
+		res = input()
 		res = res.strip().lower()
 
 		if res in ["yes", "y", "no", "n"]:
@@ -62,7 +63,7 @@ def _parse_use_argv(argv, pkg):
 
 	parser.add_argument("+h", "++help",
 		action="store_true",
-		help="show this help message and retry")
+		help="show this help message")
 
 	parser.add_argument("flag", nargs="*")
 
@@ -132,8 +133,10 @@ def _select_use_flags(pu, pkg):
 		else:
 			pu[name] = new_use
 
-		puts("Entry to write:")
-		puts(pu.file_entry(name))
+		print("")
+		print("Entry to write:")
+		print(pu.file_entry(name))
+		print("")
 
 		if not _user_confirm():
 			pu[name] = old_use
@@ -196,7 +199,7 @@ def start():
 	try:
 		pu = puz.package.PackageUse()
 	except puz.package.PackageUseReadError as err:
-		sys.exit("ERROR: Unable to read package.use file! Are you root?")
+		sys.exit("ERROR: Unable to read package.use file!")
 
 	emerge_flags = "-pv"
 	if not opts.with_deps:
@@ -230,7 +233,7 @@ def start():
 	try:
 		pu.commit()
 	except puz.package.PackageUseWriteError as err:
-		sys.exit("ERROR: Unable to write package.use file! Are you root?")
+		sys.exit("ERROR: Unable to write to file!")
 
 	print("Done!")
 	sys.exit(0)
