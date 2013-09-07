@@ -27,58 +27,6 @@ class NoMatchError(puz.error.PuzError):
 	pass
 
 
-def _print_select_usage():
-	print("""
-
-	USAGE
-		<options> <use-flags>
-
-	OPTIONS
-		/?
-			Show this help screen.
-
-		/v
-			Include version in USE flag entry.
-
-		/a
-			Append the following flags to the current entry in package.use.
-
-		/s
-			Make no changes and skip this package.
-
-	EXAMPLES
-		All examples use x11-base/xorg-server-1.12.2 as the package whose USE
-		flags are being selected. Current entry in package.use is
-		'x11-base/xorg-server ipv6 nptl xorg'.
-
-		Add 'udev' and 'doc' to the current USE flags for x11-base/xorg-server:
-			> /a udev doc
-		Entry:
-			x11-base/xorg-server ipv6 nptl xorg udev doc
-
-		Add 'udev' and '-static-libs' to current USE flags for
-		x11-base/xorg-server-1.12.2:
-			> /v /a udev -static-libs
-		Entries:
-			x11-base/xorg-server ipv6 nptl xorg
-			x11-base/xorg-server-1.12.2 udev -static-libs
-
-		Clear current entry for x11-base/xorg-server and create a new entry
-		with 'udev' and 'doc':
-			> udev doc
-		Entry:
-			x11-base/xorg-server udev doc
-
-		Clear current entry for x11-base/xorg-server-1.12.2 and create new
-		entry with 'udev' and 'doc':
-			> /v udev doc
-		Entry:
-			x11-base/xorg-server ipv6 nptl xorg
-			x11-base/xorg-server-1.12.2 udev doc
-
-	""")
-
-
 def _user_confirm():
 	res = ""
 
@@ -95,7 +43,10 @@ def _user_confirm():
 
 
 def _parse_use_argv(argv, pkg):
-	parser = argparse.ArgumentParser(prefix_chars="+")
+	parser = argparse.ArgumentParser(
+		prefix_chars="+",
+		prog="",
+		add_help=False)
 
 	parser.add_argument("+v", "++version",
 		action="store_true",
@@ -109,9 +60,17 @@ def _parse_use_argv(argv, pkg):
 		action="store_true",
 		help="append the following flags to the current entry")
 
-	parser.add_argument("flag", nargs="+")
+	parser.add_argument("+h", "++help",
+		action="store_true",
+		help="show this help message and retry")
+
+	parser.add_argument("flag", nargs="*")
 
 	opts = parser.parse_args(argv)
+
+	if opts.help:
+		parser.print_help()
+		sys.exit(0)
 
 	for flag in opts.flag:
 		if not pkg.is_valid_flag(flag):
