@@ -61,7 +61,7 @@ class Package:
 	@staticmethod
 	def parse_emerge_output(line):
 		name_regex_str = r"[0-9A-Za-z+_\.\-]+/"
-		name_regex_str += r"[0-9A-Za-z+_\.]+(-[[:alpha:]][0-9A-Za-z+_\.]*)*"
+		name_regex_str += r"[0-9A-Za-z+_\.]+(-[A-Za-z][0-9A-Za-z+_\.]*)*"
 
 		name_regex = re.compile(name_regex_str)
 
