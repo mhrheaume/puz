@@ -175,7 +175,6 @@ class PackageUse:
 
 			with open(fp, "w") as fh:
 				for k in self.use.keys():
-					print(k)
 					pkg_entry = self.file_entry(k)
 					if pkg_entry:
 						fh.write(pkg_entry + "\n")
