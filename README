@@ -16,7 +16,7 @@ package.use file.
 Usage
 -----
 
-	puz [-wsvh] <package>
+	puz.py [-wsvh] <package>
 
 Run with -h for more information.
 
@@ -24,7 +24,7 @@ Examples
 --------
 
 Choose USE flags for sys-kernel/gentoo-sources
-	puz sys-kernel/gentoo-sources
+	puz.py sys-kernel/gentoo-sources
 
 Choose USE flags for x11-base/xorg-server and all of it's dependencies.
-	puz --with-deps xorg-server
+	puz.py --with-deps xorg-server
