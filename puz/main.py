@@ -231,10 +231,10 @@ def start():
 		_select_use_flags(pu, pkg)
 
 	try:
-		pu.commit()
+		output_file = pu.commit()
 	except puz.package.PackageUseWriteError as err:
 		sys.exit("ERROR: Unable to write to file!")
 
-	print("Done!")
+	print("Done! New package.use file is {0}".format(output_file))
 	sys.exit(0)
 
