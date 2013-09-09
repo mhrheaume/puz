@@ -16,10 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-import os
+from os.path import abspath, dirname
 import unittest
-import sys
+
+PUZ_DIR = abspath(dirname(dirname(__file__)))
 
 if __name__ == "__main__":
-	testsuite = unittest.TestLoader().discover("../puz")
+	testsuite = unittest.TestLoader().discover(PUZ_DIR)
 	unittest.TextTestRunner(verbosity=1).run(testsuite)

@@ -97,16 +97,17 @@ class PackageUseTests(unittest.TestCase):
 			"sys-devel/gcc cxx fortran"
 		]
 
-		pu.commit()
+		fp_new = pu.commit()
 
 		# Check that each of the entries in the file contain one of the
 		# final entries
 
-		with open(fp, "r") as fh:
+		with open(fp_new, "r") as fh:
 			for line in fh:
 				self.assertIn(line.rstrip("\n"), final_entries)
 
 		os.remove(fp)
+		os.remove(fp_new)
 
 if __name__ == "__main__":
 	unittest.main()

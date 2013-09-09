@@ -187,6 +187,8 @@ class PackageUse:
 
 				os.chmod(fp, mask)
 
+			return fp
+
 		except IOError as err:
 			errmsg = "Unable to write to tempfile: "
 			errmsg += "{0}".format(err.strerror)
