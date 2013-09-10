@@ -174,21 +174,26 @@ def _get_ebuild_lines(emerge_output):
 
 def _parse_argv():
 	parser = argparse.ArgumentParser(
-		description="Interactively choose atom specific USE flags.")
-
-	parser.add_argument("-s", "--show-emerge",
-		action="store_true",
-		help="show full output from portage")
-
-	parser.add_argument("-w", "--with-deps",
-		action="store_true",
-		help="choose USE flags for the atom as well as each dependency")
+		description="Interactively choose package specific USE flags.")
 
 	parser.add_argument("-v", "--version",
 		action="version",
 		version=puz.constants.VERSION_STR)
 
-	parser.add_argument("atom", nargs="+")
+	parser.add_argument("-s", "--show-emerge",
+		action="store_true",
+		help="show full output from emerge")
+
+	parser.add_argument("-w", "--with-deps",
+		action="store_true",
+		help="choose USE flags for all dependencies")
+
+	parser.add_argument("-p", "--package-use",
+		metavar="file",
+		help="specify the package.use file to use")
+
+	parser.add_argument("package",
+		help="the package to be operated on")
 
 	return parser.parse_args()
 
@@ -197,7 +202,7 @@ def start():
 	opts = _parse_argv()
 
 	try:
-		pu = puz.package.PackageUse()
+		pu = puz.package.PackageUse(opts.package_use)
 	except puz.package.PackageUseReadError as err:
 		sys.exit("ERROR: Unable to read package.use file!")
 
@@ -205,7 +210,7 @@ def start():
 	if not opts.with_deps:
 		emerge_flags += "O"
 
-	emerge_target = opts.atom[0]
+	emerge_target = opts.package
 
 	try:
 		emerge_output = subprocess.check_output(

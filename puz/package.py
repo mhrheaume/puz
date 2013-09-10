@@ -109,8 +109,11 @@ class Package:
 
 
 class PackageUse:
-	def __init__(self, use_file = puz.constants.DEFAULT_USE_FILE):
+	def __init__(self, use_file):
 		self.use = collections.defaultdict(list)
+
+		if not use_file:
+			use_file = puz.constants.DEFAULT_USE_FILE
 
 		try:
 			with open(use_file, "r") as fh:
