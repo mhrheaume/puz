@@ -109,14 +109,11 @@ class Package:
 
 
 class PackageUse:
-	def __init__(self, use_file):
+	def __init__(self):
 		self.use = collections.defaultdict(list)
 
-		if not use_file:
-			use_file = puz.constants.DEFAULT_USE_FILE
-
 		try:
-			with open(use_file, "r") as fh:
+			with open(puz.constants.DEFAULT_USE_FILE, "r") as fh:
 				for line in fh:
 					new_entry = line.strip().split(" ")
 

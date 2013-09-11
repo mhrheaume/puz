@@ -184,10 +184,6 @@ def _parse_argv():
 		action="store_true",
 		help="show full output from emerge")
 
-	parser.add_argument("-p", "--package-use",
-		metavar="file",
-		help="specify the package.use file to use")
-
 	parser.add_argument("package",
 		help="the package to be operated on")
 
@@ -198,7 +194,7 @@ def start():
 	opts = _parse_argv()
 
 	try:
-		pu = puz.package.PackageUse(opts.package_use)
+		pu = puz.package.PackageUse()
 	except puz.package.PackageUseReadError as err:
 		sys.exit("ERROR: Unable to read package.use file!")
 
