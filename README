@@ -15,7 +15,7 @@ package.use file.
 Usage
 -----
 
-	puz.py [-h] [-v] [-p file] <package>
+	puz.py [-h] [-v] [-s] [-p file] <package>
 
 Run with -h for more information.
 
