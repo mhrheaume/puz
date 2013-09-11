@@ -184,10 +184,6 @@ def _parse_argv():
 		action="store_true",
 		help="show full output from emerge")
 
-	parser.add_argument("-w", "--with-deps",
-		action="store_true",
-		help="choose USE flags for all dependencies")
-
 	parser.add_argument("-p", "--package-use",
 		metavar="file",
 		help="specify the package.use file to use")
@@ -206,10 +202,7 @@ def start():
 	except puz.package.PackageUseReadError as err:
 		sys.exit("ERROR: Unable to read package.use file!")
 
-	emerge_flags = "-pv"
-	if not opts.with_deps:
-		emerge_flags += "O"
-
+	emerge_flags = "-pvO"
 	emerge_target = opts.package
 
 	try:

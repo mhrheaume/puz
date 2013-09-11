@@ -2,11 +2,10 @@
 puz, (c) 2013 Matthew Rheaume
 =============================
 
-A simple tool for choosing package specific USE flags for a given package, and
-optionally all of it's dependencies. This program will run emerge to determine
-available USE flags, will list current USE flags for the package, and then give
-the option to choose USE flags for the package. Will loop through package
-dependencies if --with-deps is selected.
+A simple tool for choosing package specific USE flags for a given package. This
+program will run emerge to determine available USE flags, will list current USE
+flags for the package, and then give the option to choose USE flags for the
+package.
 
 This script will read /etc/portage/package.use, therefore must be run as a
 user who can read to /etc/portage/package.use. Once finished, the script
@@ -16,7 +15,7 @@ package.use file.
 Usage
 -----
 
-	puz.py [-wsvh] <package>
+	puz.py [-h] [-v] [-p file] <package>
 
 Run with -h for more information.
 
@@ -25,6 +24,3 @@ Examples
 
 Choose USE flags for sys-kernel/gentoo-sources
 	puz.py sys-kernel/gentoo-sources
-
-Choose USE flags for x11-base/xorg-server and all of it's dependencies.
-	puz.py --with-deps xorg-server
