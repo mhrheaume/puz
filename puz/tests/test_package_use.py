@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 import os
+import shutil
 import textwrap
 import tempfile
 import unittest
@@ -41,6 +42,25 @@ class PackageUseTests(unittest.TestCase):
 		self.assertCountEqual(pu["sys-devel/gcc-4.5.4"], ["cxx"])
 
 		os.remove(fp)
+
+
+	def test_init_dir(self):
+		dp = tempfile.mkdtemp();
+		entries = TEST_ENTRIES.splitlines()
+
+		for i in range(0, len(entries)):
+			fh_os, fp = tempfile.mkstemp(dir=dp)
+
+			with os.fdopen(fh_os, "w") as fh:
+				fh.write(entries[i])
+
+		pu = PackageUse(dp)
+
+		self.assertCountEqual(pu["x11-wm/xmonad"], ["doc", "hscolour"])
+		self.assertCountEqual(pu["dev-libs/libxml2"], ["ipv6", "-python"])
+		self.assertCountEqual(pu["sys-devel/gcc-4.5.4"], ["cxx"])
+
+		shutil.rmtree(dp)
 
 
 	def test_use_manipulation(self):

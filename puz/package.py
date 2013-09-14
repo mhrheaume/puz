@@ -22,6 +22,7 @@ import time
 
 import puz.constants
 import puz.error
+import puz.utils
 
 class PackageError(puz.error.PuzError):
 	pass
@@ -112,25 +113,23 @@ class PackageUse:
 	def __init__(self, use_file = puz.constants.PACKAGE_USE_FILE):
 		self.use = collections.defaultdict(list)
 
-		file_list = []
-
 		if os.path.isdir(use_file):
-			files_list = os.listdir(use_file)
+			file_list = puz.utils.listdir_fullpath(use_file)
 		else:
-			files_lise = [use_file]
+			file_list = [use_file]
 
 		for f in file_list:
 			try:
-				entries = __parse_package_use(f)
+				entries = self.__parse_package_use(f)
 				self.use.update(entries)
 			except IOError as err:
 				errmsg = "Could not read {0}: ".format(f)
-				errmsg += "{1}".format(err.strerror)
+				errmsg += "{0}".format(err.strerror)
 
 				raise PackageUseReadError(errmsg)
 
 
-	def __parse_package_use(f):
+	def __parse_package_use(self, f):
 		entries = {}
 
 		with open(f, "r") as fh:
