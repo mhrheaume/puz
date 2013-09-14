@@ -112,24 +112,40 @@ class PackageUse:
 	def __init__(self, use_file = puz.constants.PACKAGE_USE_FILE):
 		self.use = collections.defaultdict(list)
 
-		try:
-			# TODO: Support package.use as a directory as well
-			with open(use_file, "r") as fh:
-				for line in fh:
-					new_entry = line.strip().split(" ")
+		file_list = []
 
-					if len(new_entry) < 2:
-						continue
+		if os.path.isdir(use_file):
+			files_list = os.listdir(use_file)
+		else:
+			files_lise = [use_file]
 
-					pkg = new_entry.pop(0)
-					flags = new_entry
+		for f in file_list:
+			try:
+				entries = __parse_package_use(f)
+				self.use.update(entries)
+			except IOError as err:
+				errmsg = "Could not read {0}: ".format(f)
+				errmsg += "{1}".format(err.strerror)
 
-					self.use[pkg] = flags
-		except IOError as err:
-			errmsg = "Could not read {0}: ".format(use_file)
-			errmsg += "{1}".format(err.strerror)
+				raise PackageUseReadError(errmsg)
 
-			raise PackageUseReadError(errmsg)
+
+	def __parse_package_use(f):
+		entries = {}
+
+		with open(f, "r") as fh:
+			for line in fh:
+				new_entry = line.strip().split(" ")
+
+				if len(new_entry) < 2:
+					continue
+
+				pkg = new_entry.pop(0)
+				flags = new_entry
+
+				entries[pkg] = flags
+
+		return entries
 
 
 	def __getitem__(self, index):
