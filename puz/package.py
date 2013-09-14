@@ -22,16 +22,22 @@ import time
 
 import puz.constants
 import puz.error
-import puz.utils
+
+def _listdir_fullpath(d):
+	return [os.path.join(d, f) for f in os.listdir(d)]
+
 
 class PackageError(puz.error.PuzError):
 	pass
 
+
 class PackageUseReadError(puz.error.PuzError):
 	pass
 
+
 class PackageUseWriteError(puz.error.PuzError):
 	pass
+
 
 class Package:
 	def __init__(self, name, version, use_flags):
@@ -114,7 +120,7 @@ class PackageUse:
 		self.use = collections.defaultdict(list)
 
 		if os.path.isdir(use_file):
-			file_list = puz.utils.listdir_fullpath(use_file)
+			file_list = _listdir_fullpath(use_file)
 		else:
 			file_list = [use_file]
 
